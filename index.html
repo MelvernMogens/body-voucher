@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Selamat UAS! 🎉</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{overflow:hidden;background:#0c0a14;font-family:'Space Grotesk',sans-serif;color:#fff;display:flex;justify-content:center;align-items:center;min-height:100vh;user-select:none}
+canvas#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
+.header{position:fixed;top:0;left:0;right:0;z-index:10;padding:28px 36px;pointer-events:none}
+.header h1{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;background:linear-gradient(135deg,#ffb6c8,#e8a0ff,#ffcba4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header .subtitle{font-size:.75rem;color:rgba(255,255,255,.35);letter-spacing:.1em;margin-top:4px}
+.hint-bar{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:10;display:flex;align-items:center;gap:8px;padding:10px 22px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:40px;backdrop-filter:blur(16px);pointer-events:none;transition:opacity .5s}.hint-bar .dot{width:5px;height:5px;border-radius:50%;background:#ffb6c8;animation:pd 2s infinite}.hint-bar span{font-size:.73rem;color:rgba(255,255,255,.4)}@keyframes pd{0%,100%{opacity:1}50%{opacity:.3}}
+.hover-label{position:fixed;z-index:20;padding:7px 14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;backdrop-filter:blur(16px);font-size:.78rem;color:rgba(255,255,255,.7);pointer-events:none;opacity:0;transform:translateY(5px);transition:opacity .15s,transform .15s;white-space:nowrap}.hover-label.visible{opacity:1;transform:translateY(0)}
+
+.char-wrap{position:relative;z-index:5;width:min(410px,85vw);aspect-ratio:1024/1536;animation:floaty 2.2s ease-in-out infinite alternate}
+.char-wrap img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
+@keyframes floaty{from{transform:translateY(0)}to{transform:translateY(-6px)}}
+
+.hotspot{position:absolute;border-radius:999px;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}
+.hotspot::before{content:'';position:absolute;inset:-15%;border-radius:inherit;background:radial-gradient(circle,var(--c1) 0%,transparent 70%);opacity:.2;animation:pulse 2.6s ease-in-out infinite}
+.hotspot::after{content:'';position:absolute;inset:0;border-radius:inherit;border:2px dashed var(--c1);opacity:.4}
+.hotspot:hover{transform:scale(1.05);box-shadow:0 0 25px color-mix(in srgb,var(--c1) 50%,transparent)}
+.hotspot:hover::before{opacity:.35}.hotspot:hover::after{opacity:.8;border-style:solid}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.16}50%{transform:scale(1.04);opacity:.24}}
+
+.voucher-overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:100;display:flex;justify-content:center;align-items:center;background:rgba(0,0,0,0);backdrop-filter:blur(0);pointer-events:none;transition:background .4s,backdrop-filter .4s}.voucher-overlay.active{background:rgba(0,0,0,.55);backdrop-filter:blur(10px);pointer-events:all}
+.voucher-card{position:relative;width:400px;max-width:88vw;border-radius:24px;overflow:hidden;opacity:0;transform:scale(.85) translateY(20px);transition:all .5s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.08);background:linear-gradient(145deg,rgba(26,21,40,.97),rgba(21,16,26,.98))}.voucher-overlay.active .voucher-card{opacity:1;transform:scale(1) translateY(0)}
+.voucher-inner{position:relative;z-index:2;padding:28px 28px 0}.voucher-emoji{font-size:2.4rem;margin-bottom:10px;display:block}.voucher-location{font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.4);margin-bottom:6px}.voucher-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;line-height:1.3;margin-bottom:10px}.voucher-desc{font-size:.82rem;color:rgba(255,255,255,.5);line-height:1.65;margin-bottom:18px}.voucher-code-box{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(255,255,255,.06);border:1px dashed rgba(255,255,255,.15);border-radius:10px}.voucher-code-box .code{font-family:'Space Grotesk',monospace;font-size:.9rem;font-weight:600;letter-spacing:.1em}.voucher-code-box .copy-btn{background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:.68rem;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:.08em;transition:color .2s}.voucher-code-box .copy-btn:hover{color:#fff}
+.voucher-divider{height:1px;margin:0 28px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.1) 0px,rgba(255,255,255,.1) 6px,transparent 6px,transparent 14px)}.voucher-bottom{padding:18px 28px 24px;position:relative;z-index:2}.voucher-footer{display:flex;align-items:center;justify-content:space-between}.voucher-note{font-size:.73rem;color:rgba(255,255,255,.35);font-style:italic;max-width:55%}.voucher-claim{padding:10px 24px;border:none;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .3s;letter-spacing:.03em}.voucher-claim:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.3)}.voucher-close{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.85rem;transition:all .2s;z-index:10}.voucher-close:hover{background:rgba(255,255,255,.12);color:#fff}
+.sparkle-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:200}.sparkle{position:absolute;border-radius:50%;animation:sf .8s ease-out forwards}@keyframes sf{0%{opacity:1;transform:scale(1) translate(0,0)}100%{opacity:0;transform:scale(0) translate(var(--tx),var(--ty))}}
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+<div class="header"><h1>Selamat UAS, Sayang! 🎉</h1><div class="subtitle">Pencet bagian tubuh untuk buka voucher</div></div>
+<div class="hover-label" id="hoverLabel"><span id="hoverText"></span></div>
+<div class="hint-bar" id="hintBar"><div class="dot"></div><span>Tap bagian tubuh yang mau kamu traktir 💕</span></div>
+
+<div class="char-wrap" id="charWrap">
+  <img src="character.png" alt="character">
+
+  <!-- head -->
+  <div class="hotspot" data-id="head" style="--c1:#e8a0ff; left:31.4878%; top:9.7642%; width:38%; height:24%;"></div>
+  <!-- face -->
+  <div class="hotspot" data-id="face" style="--c1:#ffb6c8; left:44.2073%; top:18.252%; width:18.1463%; height:15.0894%;"></div>
+  <!-- hand-cheek -->
+  <div class="hotspot" data-id="hand-cheek" data-group="hands" style="--c1:#a0f0c8; left:58.2561%; top:28.5935%; width:8%; height:6%;"></div>
+  <!-- hand-pocket -->
+  <div class="hotspot" data-id="hand-pocket" data-group="hands" style="--c1:#a0f0c8; left:34.6585%; top:44.1789%; width:7.5%; height:9%;"></div>
+  <!-- body -->
+  <div class="hotspot" data-id="body" style="--c1:#d0a0ff; left:38.8049%; top:36.2683%; width:22.6341%; height:14.439%;"></div>
+  <!-- belly -->
+  <div class="hotspot" data-id="belly" style="--c1:#ffe8a0; left:42.4878%; top:41.5406%; width:16%; height:9%;"></div>
+</div>
+
+<div class="voucher-overlay" id="voucherOverlay"><div class="voucher-card" id="voucherCard"><button class="voucher-close" id="voucherClose">✕</button><div class="voucher-inner"><span class="voucher-emoji" id="voucherEmoji"></span><div class="voucher-location" id="voucherLocation"></div><div class="voucher-title" id="voucherTitle"></div><div class="voucher-desc" id="voucherDesc"></div><div class="voucher-code-box"><span class="code" id="voucherCode"></span><button class="copy-btn" id="copyBtn">Copy</button></div></div><div class="voucher-divider"></div><div class="voucher-bottom"><div class="voucher-footer"><div class="voucher-note" id="voucherNote"></div><button class="voucher-claim" id="claimBtn">Claim 💝</button></div></div></div></div>
+<div class="sparkle-container" id="sparkleContainer"></div>
+
+<script>
+(()=>{
+const VOUCHERS={
+head:{name:'Kepala',emoji:'💆‍♀️',color:'#e8a0ff',title:'Creambath & Hair Spa',desc:'Rambutmu udah capek banget akhir-akhir ini. Saatnya creambath + scalp massage biar kembali sehat dan wangi!',code:'CREAMBATH-UNTUKMU',note:'buat kepala kamu yang udah mikir keras ♡'},
+face:{name:'Wajah',emoji:'✨',color:'#ffb6c8',title:'Facial & Face Mask',desc:'Muka kamu udah produksi susah selama UAS. Skrg waktunya facial treatment + mask premium biar glowing kembali!',code:'FACIAL-BUKANMAIN',note:'muka cantik harus dijaga, tapi aku mah udah suka aja ♡'},
+hands:{name:'Tangan',emoji:'💅',color:'#a0f0c8',title:'Nail Art Session',desc:'Tangan kamu udah kerja keras ngetik jawaban UAS. Saatnya manicure + nail art biar kembali cantik!',code:'NAIL-ART-UNTUKMU',note:'tanganmu yang aku genggam, harus dijaga ♡'},
+belly:{name:'Perut',emoji:'🍜',color:'#ffe8a0',title:'Makan Enak Sepuasnya',desc:'Perutmu ikut capek selama UAS. Ini voucher makan di restoran favorit kamu, makan sepuasnya ya!',code:'MAKAN-SAMA-AKU-YA',note:'perut kenyang, hati senang, bareng aku ♡'},
+body:{name:'Badan',emoji:'💆',color:'#d0a0ff',title:'Full Body Massage',desc:'Badanmu udah berjuang keras selama UAS. Full body massage 60 menit biar semua tegang hilang!',code:'PIJET-FULLBODY-60',note:'badanmu istirahat, biar aku yang urus sisanya ♡'}
+};
+
+// BG particles
+const bgC=document.getElementById('bgCanvas'),bgX=bgC.getContext('2d');function rsBg(){bgC.width=innerWidth;bgC.height=innerHeight}rsBg();addEventListener('resize',rsBg);let bps=[];class BP{constructor(){this.r()}r(){this.x=Math.random()*bgC.width;this.y=Math.random()*bgC.height;this.s=Math.random()*2+.4;this.vx=(Math.random()-.5)*.25;this.vy=(Math.random()-.5)*.25;this.o=Math.random()*.3+.08;this.c=['#ffb6c8','#e8a0ff','#a0d8ff','#ffcba4','#a0f0c8'][~~(Math.random()*5)]}u(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>bgC.width||this.y<0||this.y>bgC.height)this.r()}d(){bgX.beginPath();bgX.arc(this.x,this.y,this.s,0,Math.PI*2);bgX.fillStyle=this.c;bgX.globalAlpha=this.o;bgX.fill();bgX.globalAlpha=1}}for(let i=0;i<50;i++)bps.push(new BP());(function aBg(){bgX.clearRect(0,0,bgC.width,bgC.height);bps.forEach(p=>{p.u();p.d()});requestAnimationFrame(aBg)})();
+
+// Hotspot interaction
+const hotspots=[...document.querySelectorAll('.hotspot')];
+const hoverLabel=document.getElementById('hoverLabel');
+hotspots.forEach(el=>{
+  el.addEventListener('mouseenter',()=>{
+    const key=el.dataset.group||el.dataset.id;
+    const v=VOUCHERS[key];
+    document.getElementById('hoverText').textContent=`${v.emoji} ${v.name}`;
+    hoverLabel.classList.add('visible');
+  });
+  el.addEventListener('mousemove',e=>{
+    hoverLabel.style.left=(e.clientX+14)+'px';
+    hoverLabel.style.top=(e.clientY-14)+'px';
+  });
+  el.addEventListener('mouseleave',()=>{hoverLabel.classList.remove('visible')});
+  el.addEventListener('click',()=>showVoucher(el.dataset.group||el.dataset.id));
+});
+
+function showVoucher(key){
+  const v=VOUCHERS[key];
+  document.getElementById('voucherEmoji').textContent=v.emoji;
+  document.getElementById('voucherLocation').textContent=v.name;
+  document.getElementById('voucherTitle').textContent=v.title;
+  document.getElementById('voucherDesc').textContent=v.desc;
+  document.getElementById('voucherCode').textContent=v.code;
+  document.getElementById('voucherNote').textContent=v.note;
+  const btn=document.getElementById('claimBtn');
+  btn.style.background=`linear-gradient(135deg,${v.color},${v.color}cc)`;
+  document.getElementById('voucherOverlay').classList.add('active');
+  document.getElementById('hintBar').style.opacity='0';
+}
+function closeVoucher(){document.getElementById('voucherOverlay').classList.remove('active');setTimeout(()=>{document.getElementById('hintBar').style.opacity='1'},400)}
+document.getElementById('voucherClose').addEventListener('click',closeVoucher);
+document.getElementById('voucherOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeVoucher()});
+document.getElementById('copyBtn').addEventListener('click',()=>{navigator.clipboard.writeText(document.getElementById('voucherCode').textContent).then(()=>{const b=document.getElementById('copyBtn');b.textContent='Copied! ✓';setTimeout(()=>{b.textContent='Copy'},1200)})});
+document.getElementById('claimBtn').addEventListener('click',()=>{const cnt=document.getElementById('sparkleContainer'),cols=['#ffb6c8','#e8a0ff','#a0d8ff','#ffcba4','#ffd700'];for(let i=0;i<35;i++){const s=document.createElement('div');s.className='sparkle';s.style.left='50%';s.style.top='50%';s.style.background=cols[~~(Math.random()*5)];s.style.setProperty('--tx',(Math.random()-.5)*350+'px');s.style.setProperty('--ty',(Math.random()-.5)*350+'px');const sz=Math.random()*5+2;s.style.width=sz+'px';s.style.height=sz+'px';cnt.appendChild(s);setTimeout(()=>s.remove(),800)}const b=document.getElementById('claimBtn');b.textContent='Claimed! ✨';b.style.pointerEvents='none';setTimeout(()=>{b.textContent='Claim 💝';b.style.pointerEvents='auto';closeVoucher()},1200)});
+})();
+</script>
+</body>
+</html>
